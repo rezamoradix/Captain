@@ -28,7 +28,9 @@ class CreateMigrations extends BaseCommand
         'nanoid' => 'nanoid',
         'dates' => 'timestamps',
         'timestamps' => 'timestamps',
-        'createdBy' => 'createdBy'
+        'createdBy' => 'createdBy',
+        'creator' => 'createdBy',
+        'maker' => 'createdBy',
     ];
 
     private $tableNames = [];

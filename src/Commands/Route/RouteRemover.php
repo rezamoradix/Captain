@@ -1,6 +1,6 @@
 <?php
 
-namespace Rey\Captain\Route;
+namespace Rey\Commands\Captain\Route;
 
 use CodeIgniter\CLI\BaseCommand;
 

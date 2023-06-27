@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Migration generator for CodeIgniter
+ * requires EasyMigraion trait
+ */
+
 namespace Rey\Captain\Route;
 
 use CodeIgniter\CLI\BaseCommand;

@@ -117,7 +117,7 @@ class CreateMigrations extends BaseCommand
     private function generate(string $tableName, array $fields)
     {
         helper('inflector');
-        $template = file_get_contents("Templates/migration.tpl.php");
+        $template = file_get_contents(__DIR__ . "/Templates/migration.tpl.php");
 
         $generatedFields = [];
 

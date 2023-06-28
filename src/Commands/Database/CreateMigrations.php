@@ -131,9 +131,9 @@ class CreateMigrations extends BaseCommand
                 $type = $data['type'];
 
                 if ($type === self::FKEY)
-                    $generatedFields[] = '$this->' . $type . '(' . $nullable . ', "id", ' . $data['relation'] . ');';
+                    $generatedFields[] = "\t\t" . '$this->' . $type . '(' . $nullable . ', "id", ' . $data['relation'] . ');';
                 else
-                    $generatedFields[] = '$this->' . $type . '(' . $nullable . ');';
+                    $generatedFields[] = "\t\t" . '$this->' . $type . '(' . $nullable . ');';
             }
         }
 
@@ -141,7 +141,7 @@ class CreateMigrations extends BaseCommand
         $fieldsAsText = implode("\n", $generatedFields);
 
         $className = pascalize($tableName);
-        $generatedMigration = str_replace(["@class", "@table", '@fields'], [$className, $tableName, $fieldsAsText], $template);
+        $generatedMigration = str_replace(["@php", "@class", "@table", '@fields'], ["<?php", $className, $tableName, $fieldsAsText], $template);
 
         file_put_contents($this->migrationsPath . $this->basename($className . '.php'), $generatedMigration);
     }

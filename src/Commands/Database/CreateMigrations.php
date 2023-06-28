@@ -5,7 +5,7 @@
  * requires EasyMigraion trait
  */
 
-namespace Rey\Commands\Captain\Database;
+namespace Rey\Captain\Commands\Database;
 
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;

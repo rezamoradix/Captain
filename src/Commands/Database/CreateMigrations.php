@@ -80,7 +80,9 @@ class CreateMigrations extends BaseCommand
      *
      * @var array
      */
-    protected $options = [];
+    protected $options = [
+        'override'
+    ];
 
     /**
      * Actually execute a command.
@@ -96,25 +98,30 @@ class CreateMigrations extends BaseCommand
 
         $conf = file_get_contents($this->dbConfigFile);
 
-        $this->generateMigrations($conf);
+        $this->generateMigrations($conf, (isset($params['override']) && $params['override']));
     }
 
-    public function generateMigrations(string $config)
+    public function generateMigrations(string $config, bool $override = false)
     {
         $tables = explode("\n", $config);
-
         $this->tableNames = array_map(fn ($i) => trim(explode("=", $i)[0]), $tables);
+
+        $exMigs = $this->getExistingMigrations();
 
         foreach ($tables as $table) {
             $exp = explode("=", $table);
             $tableName = trim($exp[0]);
+            $className = pascalize($tableName);
             $fields = explode(" ", trim($exp[1]));
 
-            $this->generate($tableName, $fields);
+            $generatedMigration = $this->generate($tableName, $className, $fields);
+
+            if (!in_array($className, $exMigs) || $override)
+                file_put_contents($this->migrationsPath . $this->basename($className . '.php'), $generatedMigration);
         }
     }
 
-    private function generate(string $tableName, array $fields)
+    private function generate(string $tableName, string $className, array $fields)
     {
         helper('inflector');
         $template = file_get_contents(__DIR__ . "/Templates/migration.tpl.php");
@@ -140,10 +147,9 @@ class CreateMigrations extends BaseCommand
         $generatedFields[] = '$this->createTable();';
         $fieldsAsText = implode("\n", $generatedFields);
 
-        $className = pascalize($tableName);
         $generatedMigration = str_replace(["@php", "@class", "@table", '@fields'], ["<?php", $className, $tableName, $fieldsAsText], $template);
 
-        file_put_contents($this->migrationsPath . $this->basename($className . '.php'), $generatedMigration);
+        return $generatedMigration;
     }
 
     private function getFieldType($fieldData)
@@ -201,7 +207,7 @@ class CreateMigrations extends BaseCommand
 
         if ($data['type'] === self::FKEY) {
             $relationIntersect = array_intersect($exp, $this->tableNames);
-            
+
             $data['relation'] = !empty($typeIntersect) ? $relationIntersect[0] :
                 plural(substr($data['name'], 0, -3));
         }
@@ -219,8 +225,9 @@ class CreateMigrations extends BaseCommand
         helper('filesystem');
 
         $files = get_filenames($this->migrationsPath);
+        $names = array_map(fn ($x) => substr(end(explode("_", $x)), 0, -4), $files);
 
-        return $files;
+        return $names;
     }
 
     /**

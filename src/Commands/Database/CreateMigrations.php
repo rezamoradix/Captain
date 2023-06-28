@@ -26,8 +26,9 @@ class CreateMigrations extends BaseCommand
         self::TEXT
     ];
 
-    private $dbConfigFile =  ROOTPATH . "database.conf";
-    private $migrationsPath =  APPPATH . "Database/Migrations/";
+    private $dbConfigFile = ROOTPATH . "database.conf";
+    private $migrationsPath = APPPATH . "Database/Migrations/";
+
     private $predefinedFields = [
         'id' => 'id',
         'nanoid' => 'nanoid',
@@ -96,9 +97,11 @@ class CreateMigrations extends BaseCommand
             die;
         }
 
+        $override = isset($params['override']) && $params['override'];
+
         $conf = file_get_contents($this->dbConfigFile);
 
-        $this->generateMigrations($conf, (isset($params['override']) && $params['override']));
+        $this->generateMigrations($conf, $override);
     }
 
     public function generateMigrations(string $config, bool $override = false)

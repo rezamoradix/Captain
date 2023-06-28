@@ -11,8 +11,9 @@
             "email": "rezamoradix@gmail.com"
         }
     ],
-    "require": {},
     "require-dev": {
-        "codeigniter4/framework": "^4.0"
+        "codeigniter4/framework": "^4.0",
+        "phpunit/phpunit": "^10.2",
+        "mikey179/vfsstream": "^1.6"
     }
 }

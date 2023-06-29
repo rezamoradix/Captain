@@ -8,7 +8,7 @@ use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 use Rey\Captain\Commands\Database\CreateMigrations;
 
-final class MigrationTest extends CIUnitTestCase
+final class MigrationTest extends CommandTestCase
 {
     public function testPrompt(): void
     {

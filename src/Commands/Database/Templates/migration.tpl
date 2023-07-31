@@ -12,11 +12,11 @@ class @class extends Migration
 
     public function up()
     {
-        @fields
+@fields
     }
 
     public function down()
     {
-        $this->dropTable();
+        @down
     }
 }

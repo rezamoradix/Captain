@@ -2,36 +2,33 @@
 
 namespace Tests;
 
+require_once '_support/CommandTestCase.php';
+
 use CodeIgniter\Config\Services;
-use CodeIgniter\Test\CIUnitTestCase;
 use org\bovigo\vfs\vfsStream;
-use PHPUnit\Framework\TestCase;
 use Rey\Captain\Commands\Database\CreateMigrations;
+use Tests\Support\CommandTestCase;
 
 final class MigrationTest extends CommandTestCase
 {
     public function testPrompt(): void
     {
+        /**
+         * Creating a temp filesystem in order to store  files 
+         */
         $temp = vfsStream::setup('temp');
 
-        // define("ROOTPATH", __DIR__ . '/');
-        // define("APPPATH", __DIR__ . '/');
+        $mock = new CreateMigrations(Services::logger(), Services::commands());
 
-        $mock = $this->getMockBuilder(CreateMigrations::class)
-            ->setConstructorArgs([Services::logger(), Services::commands()])
-            ->getMock();
+        $migsDir = $temp->url() . '/migs';
 
-        $this->setPrivateProperty($mock, "dbConfigFile", "");
-        $this->setPrivateProperty($mock, "migrationsPath", "");
+        mkdir($migsDir);
+
+        $this->setPrivateProperty($mock, "dbConfigFile", HOMEPATH . "tests/test_database.conf");
+        $this->setPrivateProperty($mock, "migrationsPath", $migsDir);
         
         $mock->run([]);
 
-        // $command = new CreateMigrations(Services::logger(), Services::commands());
-
-        // $command->run([
-        //     'override' => true
-        // ]);
-
-
+        var_dump($temp->getChildren());
     }
 }

@@ -18,6 +18,11 @@ class CreateMigrations extends BaseCommand
     const TEXT = "text";
     const FKEY = "intWithFK";
 
+    const CREATE_TABLE_CODE = '$this->createTable();';
+    const DROP_TABLE_CODE = '$this->dropTable();';
+
+    const INDENTS = "\t\t";
+
     private $dataTypes = [
         self::BOOLEAN,
         self::FKEY,
@@ -39,7 +44,20 @@ class CreateMigrations extends BaseCommand
         'maker' => 'createdBy',
     ];
 
+    /**
+     * List of table names
+     *
+     * @var array
+     */
     private $tableNames = [];
+
+    /**
+     * List of finished (processed) table names
+     * This list is being updated everytime a migration is created
+     *
+     * @var array
+     */
+    private $finishedTableNames = [];
 
     /**
      * The Command's Group
@@ -92,8 +110,10 @@ class CreateMigrations extends BaseCommand
      */
     public function run(array $params)
     {
+        helper('inflector');
+
         if (!is_file($this->dbConfigFile)) {
-            CLI::error("Database config file is missing.");
+            CLI::error("Database config file is missing. [value: $this->dbConfigFile]");
             die;
         }
 
@@ -109,7 +129,7 @@ class CreateMigrations extends BaseCommand
         $tables = explode("\n", $config);
         $this->tableNames = array_map(fn ($i) => trim(explode("=", $i)[0]), $tables);
 
-        $exMigs = $this->getExistingMigrations();
+        $existingMigrations = $this->getExistingMigrations();
 
         foreach ($tables as $table) {
             $exp = explode("=", $table);
@@ -117,17 +137,28 @@ class CreateMigrations extends BaseCommand
             $className = pascalize($tableName);
             $fields = explode(" ", trim($exp[1]));
 
-            $generatedMigration = $this->generate($tableName, $className, $fields);
+            /**
+             * Check if tableName is existed, so generate alterTable instead of newTable
+             */
+            $isAlterTable = in_array($tableName, $this->finishedTableNames);
 
-            if (!in_array($className, $exMigs) || $override)
-                file_put_contents($this->migrationsPath . $this->basename($className . '.php'), $generatedMigration);
+            $generatedMigration = $isAlterTable ? $this->generateAlterTable($tableName, $className, $fields) : $this->generateNewTable($tableName, $className, $fields);
+
+            if ($isAlterTable) {
+            } else {
+                if (!in_array($className, $existingMigrations) || $override)
+                    file_put_contents($this->migrationsPath . $this->basename($className . '.php'), $generatedMigration);
+            }
+
+
+
+            $this->finishedTableNames[] = $tableName;
         }
     }
 
-    private function generate(string $tableName, string $className, array $fields)
+    private function generateNewTable(string $tableName, string $className, array $fields)
     {
-        helper('inflector');
-        $template = file_get_contents(__DIR__ . "/Templates/migration.tpl.php");
+        $template = file_get_contents(__DIR__ . "/Templates/migration.tpl");
 
         $generatedFields = [];
 
@@ -141,16 +172,46 @@ class CreateMigrations extends BaseCommand
                 $type = $data['type'];
 
                 if ($type === self::FKEY)
-                    $generatedFields[] = "\t\t" . '$this->' . $type . '(' . $nullable . ', "id", ' . $data['relation'] . ');';
+                    $generatedFields[] = self::INDENTS . '$this->' . $type . '("' . $data['name'] . '", ' . $nullable . ', "id", ' . $data['relation'] . ');';
                 else
-                    $generatedFields[] = "\t\t" . '$this->' . $type . '(' . $nullable . ');';
+                    $generatedFields[] = self::INDENTS . '$this->' . $type . '("' . $data['name'] . '", ' . $nullable . ');';
             }
         }
 
-        $generatedFields[] = '$this->createTable();';
+        $generatedFields[] = self::INDENTS . self::CREATE_TABLE_CODE;
         $fieldsAsText = implode("\n", $generatedFields);
 
-        $generatedMigration = str_replace(["@php", "@class", "@table", '@fields'], ["<?php", $className, $tableName, $fieldsAsText], $template);
+        $generatedMigration = str_replace(["@php", "@class", "@table", '@fields', '@down'], ["<?php", $className, $tableName, $fieldsAsText, self::DROP_TABLE_CODE], $template);
+
+        return $generatedMigration;
+    }
+
+    private function generateAlterTable(string $tableName, string $className, array $fields)
+    {
+        $template = file_get_contents(__DIR__ . "/Templates/migration.tpl");
+
+        $generatedFields = [];
+
+        foreach ($fields as $key => $field) {
+            $data = $this->getFieldData($field);
+            $nullable = $data['nullable'] ? "true" : "false";
+
+            if ($this->isPredefined($data['name'])) {
+                $generatedFields[] = '$this->' . $this->predefinedFields[$data['name']] . '();';
+            } else {
+                $type = $data['type'];
+
+                if ($type === self::FKEY)
+                    $generatedFields[] = self::INDENTS . '$this->' . $type . '("' . $data['name'] . '", ' . $nullable . ', "id", ' . $data['relation'] . ');';
+                else
+                    $generatedFields[] = self::INDENTS . '$this->' . $type . '("' . $data['name'] . '", ' . $nullable . ');';
+            }
+        }
+
+        $generatedFields[] = self::INDENTS . self::CREATE_TABLE_CODE;
+        $fieldsAsText = implode("\n", $generatedFields);
+
+        $generatedMigration = str_replace(["@php", "@class", "@table", '@fields', '@down'], ["<?php", $className, $tableName, $fieldsAsText, self::DROP_TABLE_CODE], $template);
 
         return $generatedMigration;
     }
@@ -206,7 +267,7 @@ class CreateMigrations extends BaseCommand
         $data['nullable'] = !empty(array_intersect(['null', 'nullable'], $exp));
 
         $typeIntersect = array_intersect($exp, $this->dataTypes);
-        $data['type'] = !empty($typeIntersect) ? $typeIntersect[0] : $this->getFieldType($data);
+        $data['type'] = !empty($typeIntersect) ? $typeIntersect[array_key_first($typeIntersect)] : $this->getFieldType($data);
 
         if ($data['type'] === self::FKEY) {
             $relationIntersect = array_intersect($exp, $this->tableNames);

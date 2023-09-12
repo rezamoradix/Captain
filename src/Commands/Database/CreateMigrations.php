@@ -170,7 +170,7 @@ class CreateMigrations extends BaseCommand
                 $type = $data['type'];
 
                 if ($type === self::FKEY)
-                    $generatedFields[] = self::INDENTS . '$this->' . $type . '("' . $data['name'] . '", ' . $nullable . ', "id", ' . $data['relation'] . ');';
+                    $generatedFields[] = self::INDENTS . '$this->' . $type . '("' . $data['name'] . '", ' . $nullable . ', "id", "' . $data['relation'] . '");';
                 else
                     $generatedFields[] = self::INDENTS . '$this->' . $type . '("' . $data['name'] . '", ' . $nullable . ');';
             }

@@ -7,16 +7,16 @@ use Rey\Easy\EasyMigration;
 
 class @class extends Migration
 {
-    use EasyMigration;
-    public $tableName = '@table';
+	use EasyMigration;
+	public $tableName = '@table';
 
-    public function up()
-    {
+	public function up()
+	{
 @fields
-    }
+	}
 
-    public function down()
-    {
-        @down
-    }
+	public function down()
+	{
+			@down
+	}
 }

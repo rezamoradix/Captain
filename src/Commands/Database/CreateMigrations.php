@@ -179,6 +179,13 @@ class CreateMigrations extends BaseCommand
                     $generatedFields[] = self::INDENTS . '$this->' . $type . '("' . $data['name'] . '", ' . $nullable . ', "id", "' . $data['relation'] . '");';
                 else
                     $generatedFields[] = self::INDENTS . '$this->' . $type . '("' . $data['name'] . '", ' . $nullable . ');';
+
+                // index, unique
+                if ($data['index'])
+                    $generatedFields[] = self::INDENTS . '$this->forge->addKey("' . $data['name'] . '", false, false, "' . $data['name'] . '_idx");';
+
+                if ($data['unique'])
+                    $generatedFields[] = self::INDENTS . '$this->forge->addUniqueKey("' . $data['name'] . '", "' . $data['name'] . '_uniq");';
             }
         }
 
@@ -264,13 +271,14 @@ class CreateMigrations extends BaseCommand
     private function getFieldData($field)
     {
         $exp = explode(":", $field);
+        $sliced = count($exp) == 1 ? [] : array_slice($exp, 1);
         $data = [
             'name' => $exp[0]
         ];
 
-        $data['nullable'] = !empty(array_intersect(['null', 'nullable'], $exp));
+        $data['nullable'] = !empty(array_intersect(['null', 'nullable'], $sliced));
 
-        $typeIntersect = array_intersect($exp, $this->dataTypes);
+        $typeIntersect = array_intersect($sliced, $this->dataTypes);
         $data['type'] = !empty($typeIntersect) ? $typeIntersect[array_key_first($typeIntersect)] : $this->getFieldType($data);
 
         if ($data['type'] === self::FKEY) {
@@ -279,6 +287,9 @@ class CreateMigrations extends BaseCommand
             $data['relation'] = !empty($typeIntersect) ? $relationIntersect[0] :
                 plural(substr($data['name'], 0, -3));
         }
+
+        $data['index'] = in_array('index', $sliced);
+        $data['unique'] = in_array('unique', $sliced);
 
         return $data;
     }

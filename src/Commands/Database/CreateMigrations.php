@@ -150,8 +150,6 @@ class CreateMigrations extends BaseCommand
                     file_put_contents($this->migrationsPath . $this->basename($className . '.php'), $generatedMigration);
             }
 
-
-
             $this->finishedTableNames[] = $tableName;
         }
     }
@@ -289,7 +287,14 @@ class CreateMigrations extends BaseCommand
         helper('filesystem');
 
         $files = get_filenames($this->migrationsPath);
-        $names = array_map(fn ($x) => substr(end(explode("_", $x)), 0, -4), $files);
+
+        $names = [];
+
+        foreach ($files as $key => $file) {
+            $_exp = explode('_', $file);
+            $_end = end($_exp);
+            $names[] = substr($_end, 0, -4);
+        }
 
         return $names;
     }

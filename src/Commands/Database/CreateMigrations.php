@@ -9,6 +9,7 @@ namespace Rey\Captain\Commands\Database;
 
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
+use Rey\Captain\ExistingMigration;
 
 class CreateMigrations extends BaseCommand
 {
@@ -85,7 +86,7 @@ class CreateMigrations extends BaseCommand
      *
      * @var string
      */
-    protected $usage = 'db:migrations <path> [options]';
+    protected $usage = 'db:migrations [options]';
 
     /**
      * The Command's Arguments
@@ -130,6 +131,7 @@ class CreateMigrations extends BaseCommand
         $this->tableNames = array_map(fn ($i) => trim(explode("=", $i)[0]), $tables);
 
         $existingMigrations = $this->getExistingMigrations();
+        $existingMigrationNames = array_map(fn ($x) => $x->name, $existingMigrations);
 
         foreach ($tables as $table) {
             $exp = explode("=", $table);
@@ -147,7 +149,10 @@ class CreateMigrations extends BaseCommand
             if ($isAlterTable) {
                 // TODO
             } else {
-                if (!in_array($className, $existingMigrations) || $override)
+                if (in_array($className, $existingMigrationNames) && $override)
+                    file_put_contents($existingMigrations[array_search($className, $existingMigrationNames)]->path, $generatedMigration);
+
+                else if (!in_array($className, $existingMigrationNames))
                     file_put_contents($this->migrationsPath . $this->basename($className . '.php'), $generatedMigration);
             }
 
@@ -283,21 +288,24 @@ class CreateMigrations extends BaseCommand
         return in_array($field, array_keys($this->predefinedFields));
     }
 
+    /**
+     * @return ExistingMigration[]
+     */
     private function getExistingMigrations()
     {
         helper('filesystem');
 
         $files = get_filenames($this->migrationsPath);
 
-        $names = [];
+        $migs = [];
 
         foreach ($files as $key => $file) {
             $_exp = explode('_', $file);
             $_end = end($_exp);
-            $names[] = substr($_end, 0, -4);
+            $migs[] = new ExistingMigration(substr($_end, 0, -4), $file);
         }
 
-        return $names;
+        return $migs;
     }
 
     /**

@@ -165,7 +165,7 @@ class CreateMigrations extends BaseCommand
             $nullable = $data['nullable'] ? "true" : "false";
 
             if ($this->isPredefined($data['name'])) {
-                $generatedFields[] = '$this->' . $this->predefinedFields[$data['name']] . '();';
+                $generatedFields[] = self::INDENTS . '$this->' . $this->predefinedFields[$data['name']] . '();';
             } else {
                 $type = $data['type'];
 

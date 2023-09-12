@@ -2,8 +2,8 @@
 
 namespace App\Database\Migrations;
 
-use App\Libraries\EasyMigration;
 use CodeIgniter\Database\Migration;
+use Rey\Easy\EasyMigration;
 
 class @class extends Migration
 {

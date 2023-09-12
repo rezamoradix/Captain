@@ -145,6 +145,7 @@ class CreateMigrations extends BaseCommand
             $generatedMigration = $isAlterTable ? $this->generateAlterTable($tableName, $className, $fields) : $this->generateNewTable($tableName, $className, $fields);
 
             if ($isAlterTable) {
+                // TODO
             } else {
                 if (!in_array($className, $existingMigrations) || $override)
                     file_put_contents($this->migrationsPath . $this->basename($className . '.php'), $generatedMigration);

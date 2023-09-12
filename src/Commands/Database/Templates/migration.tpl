@@ -17,6 +17,6 @@ class @class extends Migration
 
 	public function down()
 	{
-			@down
+		@down
 	}
 }

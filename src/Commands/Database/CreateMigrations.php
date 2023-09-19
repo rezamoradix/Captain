@@ -127,7 +127,7 @@ class CreateMigrations extends BaseCommand
 
     public function generateMigrations(string $config, bool $override = false)
     {
-        $tables = explode("\n", $config);
+        $tables = array_filter(explode("\n", $config), fn ($x) => !empty($x));
         $this->tableNames = array_map(fn ($i) => trim(explode("=", $i)[0]), $tables);
 
         $existingMigrations = $this->getExistingMigrations();

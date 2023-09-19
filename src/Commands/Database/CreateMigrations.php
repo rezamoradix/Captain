@@ -150,7 +150,7 @@ class CreateMigrations extends BaseCommand
                 // TODO
             } else {
                 if (in_array($className, $existingMigrationNames) && $override)
-                    file_put_contents($existingMigrations[array_search($className, $existingMigrationNames)]->path, $generatedMigration);
+                    file_put_contents($this->migrationsPath . $existingMigrations[array_search($className, $existingMigrationNames)]->path, $generatedMigration);
 
                 else if (!in_array($className, $existingMigrationNames))
                     file_put_contents($this->migrationsPath . $this->basename($className . '.php'), $generatedMigration);

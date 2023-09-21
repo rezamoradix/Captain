@@ -175,9 +175,12 @@ class CreateMigrations extends BaseCommand
             } else {
                 $type = $data['type'];
 
-                if ($type === self::FKEY)
-                    $generatedFields[] = self::INDENTS . '$this->' . $type . '("' . $data['name'] . '", ' . $nullable . ', "id", "' . $data['relation'] . '");';
-                else
+                if ($type === self::FKEY) {
+                    $onUpdate = $data['update-cascade'] ? 'CASCADE' : '';
+                    $onDelete = $data['delete-cascade'] ? 'CASCADE' : '';
+
+                    $generatedFields[] = self::INDENTS . '$this->' . $type . '("' . $data['name'] . '", ' . $nullable . ', "id", "' . $data['relation'] . '", "' . $onUpdate . '", "' . $onDelete . '");';
+                } else
                     $generatedFields[] = self::INDENTS . '$this->' . $type . '("' . $data['name'] . '", ' . $nullable . ');';
 
                 // index, unique
@@ -290,6 +293,11 @@ class CreateMigrations extends BaseCommand
 
         $data['index'] = in_array('index', $sliced);
         $data['unique'] = in_array('unique', $sliced);
+
+        $cascadeBoth = in_array('cascade', $sliced);
+
+        $data['update-cascade'] = $cascadeBoth || in_array('update-cascade', $sliced);
+        $data['delete-cascade'] = $cascadeBoth || in_array('delete-cascade', $sliced);
 
         return $data;
     }

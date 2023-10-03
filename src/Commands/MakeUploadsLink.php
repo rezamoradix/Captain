@@ -1,15 +1,11 @@
 <?php
 
-namespace Rey\Captain\Commands\Route;
+namespace Rey\Captain\Commands;
 
 use CodeIgniter\CLI\BaseCommand;
-use CodeIgniter\CLI\CLI;
-use CodeIgniter\CLI\GeneratorTrait;
 
 class MakeUploadsLink extends BaseCommand
 {
-    private $methods = ["GET", "POST", "PUT", "PATCH", "DELETE"];
-
     /**
      * The Command's Group
      *

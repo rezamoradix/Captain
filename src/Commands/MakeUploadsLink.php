@@ -55,12 +55,20 @@ class MakeUploadsLink extends BaseCommand
      */
     public function run(array $params)
     {
-        if (is_windows())
-        {
-            $uploads_in_public = escapeshellarg(realpath(is_dir(ROOTPATH . 'public_html') ? ROOTPATH . 'public_html' : ROOTPATH . 'public'));
-            $uploads_in_writable = escapeshellarg(realpath(WRITEPATH . 'uploads/'));
-            exec("powershell ni -ItemType Symbolink -Path $uploads_in_public -Target $uploads_in_writable");
+        if (is_windows()) {
+            $uploads_in_public = realpath(is_dir(ROOTPATH . 'public_html') ? ROOTPATH . 'public_html' : ROOTPATH . 'public');
+            $uploads_in_writable = realpath(WRITEPATH . 'uploads/');
+            $this->link($uploads_in_public, $uploads_in_writable);
         }
     }
 
+    public function link($target, $link)
+    {
+        if (!is_windows()) {
+            symlink($target, $link);
+        } else {
+            $mode = is_dir($target) ? 'J' : 'H';
+            exec("mklink /{$mode} " . escapeshellarg($link) . ' ' . escapeshellarg($target));
+        }
+    }
 }

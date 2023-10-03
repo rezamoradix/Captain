@@ -56,9 +56,9 @@ class MakeUploadsLink extends BaseCommand
     public function run(array $params)
     {
         if (is_windows()) {
-            $public = is_dir(ROOTPATH . 'public_html') ? ROOTPATH . 'public_html' : ROOTPATH . 'public';
-            $uploads_in_public = realpath($public . '/uploads');
-            $uploads_in_writable = realpath(WRITEPATH . 'uploads');
+            $public = ROOTPATH . (is_dir(ROOTPATH . 'public_html') ? 'public_html' : 'public') . DIRECTORY_SEPARATOR;
+            $uploads_in_public = $public . 'uploads';
+            $uploads_in_writable = WRITEPATH . 'uploads';
             $this->link($uploads_in_writable, $uploads_in_public);
         }
     }

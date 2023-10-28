@@ -16,6 +16,7 @@ class CreateMigrations extends BaseCommand
     const INT = "int";
     const BOOLEAN = "boolean";
     const STRING = "string";
+    const DATETIME = "datetime";
     const TEXT = "text";
     const FKEY = "intWithFK";
 
@@ -29,7 +30,8 @@ class CreateMigrations extends BaseCommand
         self::FKEY,
         self::STRING,
         self::INT,
-        self::TEXT
+        self::TEXT,
+        self::DATETIME
     ];
 
     private $dbConfigFile = ROOTPATH . "database.conf";
@@ -263,6 +265,9 @@ class CreateMigrations extends BaseCommand
         if (str_ends_with($fieldName, "text"))
             return self::TEXT;
 
+        // DATE
+        if (str_ends_with($fieldName, "_AT"))
+            return self::DATETIME;
 
         // KEY
         if (str_ends_with($fieldName, "_id") && in_array(plural(substr($fieldName, 0, -3)), $this->tableNames))

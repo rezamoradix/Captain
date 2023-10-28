@@ -17,3 +17,5 @@ more commands and tools for Codeigniter 4
 users = id name email password:text is_active dates(=created_at,updated_at,deleted_at)
 posts = id title body:text type:index user_id published_at dates
 ```
+
+** NOTE = migration generator relies on [Easy](https://github.com/rezamoradix/Easy)
